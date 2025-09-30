@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcanecoder: O Syllabus Arcano</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Source+Code+Pro&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0d0a1a;
+            --panel-bg: #1a1433e0;
+            --primary-glow: #e44d26; /* Cor Padrão (HTML Orange) */
+            --secondary-glow: #f16529;
+            --text-color: #e0e0e0;
+            --success-color: #00ff9b;
+            --error-color: #ff5e5e;
+            --font-title: 'Cinzel', serif;
+            --font-code: 'Source Code Pro', monospace;
+            --transition-speed: 0.5s;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 20% 20%, var(--secondary-glow) -10%, transparent 40%),
+                              radial-gradient(circle at 80% 70%, var(--primary-glow) -10%, transparent 40%);
+            font-family: var(--font-code);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-image var(--transition-speed) ease;
+        }
+
+        #game-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            max-height: 800px;
+        }
+
+        .game-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-glow);
+            border-radius: 15px;
+            box-shadow: 0 0 15px var(--primary-glow);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+        
+        #world-panel { gap: 20px; }
+        #character-box { display: flex; align-items: center; gap: 15px; }
+        
+        #character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--secondary-glow);
+            border: 2px solid var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+            transition: background-color var(--transition-speed) ease;
+        }
+
+        #character-dialogue-box { flex: 1; }
+        #character-name { font-family: var(--font-title); color: var(--primary-glow); margin-bottom: 5px; transition: color var(--transition-speed) ease; }
+        #character-dialogue { font-style: italic; font-size: 0.9rem; line-height: 1.4; }
+
+        #spell-output-wrapper {
+            flex-grow: 1;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            border: 1px dashed var(--secondary-glow);
+            padding: 15px;
+            overflow-y: auto;
+            transition: border-color var(--transition-speed) ease;
+        }
+        
+        #spell-output-wrapper h3 { font-family: var(--font-title); text-align: center; margin-bottom: 15px; color: var(--secondary-glow); transition: color var(--transition-speed) ease; }
+        #spell-output p, #spell-output h1, #spell-output h2, #spell-output div, #spell-output ul, #spell-output ol, #spell-output button, #spell-output pre { margin-bottom: 10px; }
+        #spell-output pre { background-color: #000; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+
+        #challenge-panel h2 { font-family: var(--font-title); text-align: center; color: var(--primary-glow); transition: color var(--transition-speed) ease; }
+        
+        #progress-bar-container { width: 100%; height: 10px; background-color: #000; border-radius: 5px; margin: 10px 0 20px 0; border: 1px solid var(--secondary-glow); transition: border-color var(--transition-speed) ease; }
+        #progress-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--secondary-glow), var(--primary-glow)); border-radius: 5px; transition: width 0.5s ease-in-out, background var(--transition-speed) ease; }
+
+        #challenge-text { line-height: 1.5; flex-grow: 1; }
+        #code-input { width: 100%; height: 200px; background-color: #0d0a1a; color: var(--success-color); border: 1px solid var(--secondary-glow); border-radius: 5px; font-family: inherit; font-size: 1rem; padding: 10px; margin-top: 10px; resize: none; transition: border-color var(--transition-speed) ease; }
+        #code-input:focus { outline: none; box-shadow: 0 0 10px var(--secondary-glow); transition: box-shadow var(--transition-speed) ease; }
+
+        #submit-button { background: linear-gradient(45deg, var(--secondary-glow), var(--primary-glow)); color: white; border: none; padding: 12px; font-family: var(--font-title); font-size: 1.2rem; cursor: pointer; border-radius: 5px; margin-top: 10px; transition: transform 0.2s, box-shadow 0.2s, background var(--transition-speed) ease; }
+        #submit-button:hover { transform: scale(1.02); box-shadow: 0 0 20px var(--primary-glow); }
+
+        #feedback-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; min-height: 24px; }
+        .feedback-icon { width: 20px; height: 20px; display: none; flex-shrink: 0; }
+        #feedback-text { font-weight: bold; }
+        
+        @media (max-width: 900px) {
+            body { padding: 10px; align-items: flex-start; }
+            #game-wrapper { grid-template-columns: 1fr; height: auto; max-height: none; gap: 10px; }
+            .game-panel { padding: 15px; }
+            #code-input { height: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <div id="world-panel" class="game-panel">
+            <div id="character-box"> <div id="character-avatar">🧙</div> <div id="character-dialogue-box"> <h3 id="character-name">Mestre Elara</h3> <p id="character-dialogue">Bem-vindo, aprendiz.</p> </div> </div>
+            <div id="spell-output-wrapper"> <h3>Seu Grimório</h3> <div id="spell-output"> </div> </div>
+        </div>
+        <div id="challenge-panel" class="game-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="chapter-title"></h2>
+                <button id="reset-button" title="Recomeçar do zero" style="background: #444; color: white; border: 1px solid #888; border-radius: 5px; padding: 2px 8px; font-size: 0.8rem; cursor: pointer;">Reset</button>
+            </div>
+            <div id="progress-bar-container"> <div id="progress-bar-fill"></div> </div>
+            <p id="challenge-text"></p>
+            <textarea id="code-input" spellcheck="false"></textarea>
+            <button id="submit-button">Conjurar</button>
+            <div id="feedback-box">
+                <svg id="icon-success" class="feedback-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="var(--success-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg id="icon-error" class="feedback-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6l12 12" stroke="var(--error-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span id="feedback-text"></span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const spellOutput = document.getElementById('spell-output');
+            const challengeText = document.getElementById('challenge-text');
+            const codeInput = document.getElementById('code-input');
+            const submitButton = document.getElementById('submit-button');
+            const feedbackText = document.getElementById('feedback-text');
+            const chapterTitle = document.getElementById('chapter-title');
+            const progressBarFill = document.getElementById('progress-bar-fill');
+            const characterDialogue = document.getElementById('character-dialogue');
+            const iconSuccess = document.getElementById('icon-success');
+            const iconError = document.getElementById('icon-error');
+            const resetButton = document.getElementById('reset-button');
+            const styleTag = document.createElement('style');
+            document.head.appendChild(styleTag);
+            
+            let gameState = { currentLevel: 0 };
+
+            const chapterThemes = {
+                '1: Invocação (HTML)': { primary: '#e44d26', secondary: '#f16529' },
+                '2: Encantamentos (CSS)': { primary: '#264de4', secondary: '#2965f1' },
+                '3: Animação (JavaScript)': { primary: '#f0db4f', secondary: '#f7df1e' },
+                '4: Alquimia (React)': { primary: '#61dafb', secondary: '#a8e9ff' },
+                '5: Rituais do Servidor (Node)': { primary: '#339933', secondary: '#68a063' },
+                '6: Pactos de Dados (APIs & SQL)': { primary: '#A0A0A0', secondary: '#cccccc' },
+                '7: Magia da Serpente (Python)': { primary: '#3776ab', secondary: '#ffd43b' }
+            };
+
+            const levels = [
+                // CAPÍTULO 1: HTML (15 Fases)
+                ...Array.from({ length: 15 }, (_, i) => ({ chapter: '1: Invocação (HTML)', type: 'html', ...getHtmlLevel(i) })),
+                // CAPÍTULO 2: CSS (15 Fases)
+                ...Array.from({ length: 15 }, (_, i) => ({ chapter: '2: Encantamentos (CSS)', type: 'css', ...getCssLevel(i) })),
+                // CAPÍTULO 3: JavaScript (15 Fases)
+                ...Array.from({ length: 15 }, (_, i) => ({ chapter: '3: Animação (JavaScript)', type: 'js', ...getJsLevel(i) })),
+                // CAPÍTULO 4: React (15 Fases)
+                ...Array.from({ length: 15 }, (_, i) => ({ chapter: '4: Alquimia (React)', type: 'react', ...getReactLevel(i) })),
+                // CAPÍTULO 5: Node.js (15 Fases)
+                ...Array.from({ length: 15 }, (_, i) => ({ chapter: '5: Rituais do Servidor (Node)', type: 'node', ...getNodeLevel(i) })),
+                // CAPÍTULO 6: APIs & SQL (15 Fases)
+                ...Array.from({ length: 15 }, (_, i) => ({ chapter: '6: Pactos de Dados (APIs & SQL)', type: 'api-sql', ...getApiSqlLevel(i) })),
+                // CAPÍTULO 7: Python (15 Fases) - BÔNUS
+                ...Array.from({ length: 15 }, (_, i) => ({ chapter: '7: Magia da Serpente (Python)', type: 'python', ...getPythonLevel(i) })),
+            ];
+
+            function getHtmlLevel(i) { /* Retorna dados da fase HTML */
+                const data = [
+                    {d: "Todo grande tomo precisa de um título. Use h1 para 'O Livro dos Feitiços'.", c: "Invoque um título principal (h1) com o texto 'O Livro dos Feitiços'.", s: "<h1>O Livro dos Feitiços</h1>"},
+                    {d: "Descreva sua finalidade com um parágrafo.", c: "Use uma tag de parágrafo (<p>) para 'Contém os segredos da criação.'", s: "<p>Contém os segredos da criação.</p>"},
+                    {d: "Adicione uma secção com um subtítulo h2.", c: "Crie um subtítulo (h2) com 'Elementos Primordiais'.", s: "<h2>Elementos Primordiais</h2>"},
+                    {d: "Organize a magia com listas.", c: "Crie uma lista não ordenada (<ul>) com itens (<li>): 'Estrutura' e 'Estilo'.", s: "<ul><li>Estrutura</li><li>Estilo</li></ul>"},
+                    {d: "Separe os cantos com uma linha divisória.", c: "Crie uma linha horizontal com a tag <hr>.", s: "<hr>"},
+                    {d: "Invoque uma div para um feitiço poderoso.", c: "Crie uma tag div com id='aura-magica'.", s: "<div id='aura-magica'></div>"},
+                    {d: "Crie um portal para outras magias.", c: "Crie um link (<a>) com href='#' e texto 'Portal Vazio'.", s: "<a href='#'>Portal Vazio</a>"},
+                    {d: "Invoque uma imagem de uma 'Runa de Poder'.", c: "Crie uma imagem (<img>) com src='https://placehold.co/100x100/e44d26/white?text=Runa' e alt='Runa de Poder'.", s: "<img src='https://placehold.co/100x100/e44d26/white?text=Runa' alt='Runa de Poder'>"},
+                    {d: "Destaque palavras com poder.", c: "Crie um parágrafo: 'O <strong>poder</strong> está no conhecimento.'", s: "<p>O <strong>poder</strong> está no conhecimento.</p>"},
+                    {d: "Dê ênfase a outras palavras.", c: "Crie um parágrafo: 'Devemos <em>sempre</em> aprender.'", s: "<p>Devemos <em>sempre</em> aprender.</p>"},
+                    {d: "A ordem é crucial. Use uma lista ordenada.", c: "Crie uma lista ordenada (<ol>) com itens (<li>): 'Preparar', 'Conjurar', 'Observar'.", s: "<ol><li>Preparar</li><li>Conjurar</li><li>Observar</li></ol>"},
+                    {d: "Invoque um gatilho para a magia.", c: "Crie um botão (<button>) com o texto 'Ativar'.", s: "<button>Ativar</button>"},
+                    {d: "Marque uma palavra para futuros encantamentos.", c: "Parágrafo: 'A <span id='foco-magico'>magia</span> flui.'", s: "<p>A <span id='foco-magico'>magia</span> flui.</p>"},
+                    {d: "Deixe notas invisíveis no código.", c: "Adicione um comentário HTML: <!-- Meus Feitiços -->", s: "<!-- Meus Feitiços -->"},
+                    {d: "Combine feitiços numa div com classe 'ritual'.", c: "Crie <div class='ritual'> com <h2>Ritual</h2> e <p>Teste.</p> dentro.", s: "<div class='ritual'><h2>Ritual</h2><p>Teste.</p></div>"}
+                ];
+                return { dialogue: data[i].d, challenge: data[i].c, solution: data[i].s };
+            }
+            function getCssLevel(i) { /* Retorna dados da fase CSS */ 
+                const data = [
+                    {d: "Imbua o grimório com cor. Use 'aqua' no título principal.", c: "Altere a cor (color) de todos os h1 para 'aqua'.", s: "h1 { color: aqua; }"},
+                    {d: "Dê forma e substância à aura que você criou.", c: "Para #aura-magica, defina width e height de '100px' e background-color de 'gold'.", s: "#aura-magica{width:100px;height:100px;background-color:gold;}"},
+                    {d: "Transforme a aura quadrada num orbe perfeito.", c: "Faça a #aura-magica ser um círculo com border-radius: 50%.", s: "#aura-magica{border-radius:50%;}"},
+                    {d: "Faça o orbe pulsar com energia. Adicione uma borda.", c: "Adicione uma border de '3px solid purple' à #aura-magica.", s: "#aura-magica{border:3px solid purple;}"},
+                    {d: "Destaque a palavra 'magia' que marcou.", c: "Selecione #foco-magico e mude a sua cor para 'yellow'.", s: "#foco-magico{color:yellow;}"},
+                    {d: "A fonte pode ser mais mística.", c: "Mude o font-family de todos os <p> para 'serif'.", s: "p { font-family: serif; }"},
+                    {d: "Centralize os seus títulos.", c: "Use text-align: center; em todos os h2.", s: "h2 { text-align: center; }"},
+                    {d: "O orbe precisa de espaço para respirar.", c: "Adicione um padding de '10px' a #aura-magica.", s: "#aura-magica{padding:10px;}"},
+                    {d: "Afaste o orbe dos outros elementos.", c: "Adicione uma margin de '20px' a #aura-magica.", s: "#aura-magica{margin:20px;}"},
+                    {d: "Remova a distração do sublinhado do portal.", c: "Remova o text-decoration: none de todos os links (<a>).", s: "a { text-decoration: none; }"},
+                    {d: "Faça o seu ritual brilhar com uma sombra mágica.", c: "Adicione um box-shadow de '0 0 10px cyan' à classe 'ritual'.", s: ".ritual{box-shadow:0 0 10px cyan;}"},
+                    {d: "A magia deve reagir ao seu toque.", c: "Use a pseudo-classe :hover no button para mudar o background-color para 'cyan'.", s: "button:hover{background-color:cyan;}"},
+                    {d: "Indique que o botão é interativo.", c: "Mude o cursor para 'pointer' quando estiver sobre qualquer button.", s: "button{cursor:pointer;}"},
+                    {d: "Suavize a transição de cor do botão.", c: "Adicione uma transition de 'background-color 0.3s ease' ao button.", s: "button{transition:background-color 0.3s ease;}"},
+                    {d: "Dê espaço ao texto dentro da secção do ritual.", c: "Adicione um padding de '15px' à classe 'ritual'.", s: ".ritual{padding:15px;}"}
+                ];
+                return { dialogue: data[i].d, challenge: data[i].c, solution: data[i].s };
+            }
+            function getJsLevel(i) { /* Retorna dados da fase JS */
+                const data = [
+                    {d:"O mundo precisa reagir a si. Crie um 'Cristal de Interação'.", c:"Crie um botão com id 'cristal' e texto 'Tocar'. Adicione-o ao grimório.", s:`const c=document.createElement('button');c.id='cristal';c.textContent='Tocar';spellOutput.appendChild(c);`, v:()=>document.getElementById('cristal')!==null},
+                    {d:"O cristal está inerte. Ensine-o a reagir ao toque.", c:"Adicione um evento de clique (click) ao 'cristal' que mostre um alert com 'Energia liberada!'.", s:`document.getElementById('cristal').addEventListener('click',()=>{alert('Energia liberada!');});`, v:()=>{characterDialogue.textContent="Teste o cristal que conjurou.";return true;}},
+                    {d:"Crie um feitiço reutilizável com uma função.", c:"Crie uma função 'pulsarOrbe' que muda o background da 'aura-magica' para 'blueviolet'.", s:`function pulsarOrbe(){document.getElementById('aura-magica').style.backgroundColor='blueviolet';}`, v:()=>typeof pulsarOrbe==='function'},
+                    {d:"Agora, liberte a magia que preparou!", c:"Execute a função 'pulsarOrbe()'.", s:`pulsarOrbe();`, v:()=>document.getElementById('aura-magica').style.backgroundColor==='blueviolet'},
+                    {d:"Guarde uma informação mágica numa variável.", c:"Declare uma variável 'mana' com 'let' e atribua-lhe o valor 100.", s:`let mana=100;`, v:()=>typeof mana!=='undefined'&&mana===100},
+                    {d:"Altere o texto de um elemento com magia.", c:"Selecione o primeiro 'p' e mude o seu textContent para 'Os segredos foram revelados.'", s:`document.querySelector('p').textContent='Os segredos foram revelados.';`, v:()=>document.querySelector('p').textContent==='Os segredos foram revelados.'},
+                    {d:"Reescreva a estrutura! Adicione um item à sua lista.", c:"Selecione a 'ul' e adicione '<li>Animação</li>' ao seu innerHTML.", s:`document.querySelector('ul').innerHTML+='<li>Animação</li>';`, v:()=>document.querySelector('ul').innerHTML.includes('<li>Animação</li>')},
+                    {d:"Aponte a sua magia para a secção do ritual.", c:"Use document.querySelector('.ritual') e guarde o elemento numa variável 'secçãoRitual'.", s:`const secçãoRitual=document.querySelector('.ritual');`, v:()=>typeof secçãoRitual!=='undefined'&&secçãoRitual.classList.contains('ritual')},
+                    {d:"Inspecione a sua runa. Obtenha o seu endereço.", c:"Obtenha o atributo 'src' da sua 'img' e exiba-o num alert.", s:`alert(document.querySelector('img').getAttribute('src'));`, v:()=>{characterDialogue.textContent="Execute e veja o resultado.";return true;}},
+                    {d:"Mude a runa! Altere o seu poder visualmente.", c:"Mude o 'src' da 'img' para 'https://placehold.co/100x100/f0db4f/black?text=JS'.", s:`document.querySelector('img').setAttribute('src','https://placehold.co/100x100/f0db4f/black?text=JS');`, v:()=>document.querySelector('img').src.includes('f0db4f')},
+                    {d:"A magia precisa de lógica. Use uma instrução 'if'.", c:"Se 'mana > 50', mude a cor da borda do orbe para 'cyan'.", s:`if(mana>50){document.getElementById('aura-magica').style.borderColor='cyan';}`, v:()=>document.getElementById('aura-magica').style.borderColor==='cyan'},
+                    {d:"Gaste um pouco de mana.", c:"Subtraia 20 da sua variável 'mana'.", s:`mana=mana-20;`, v:()=>mana===80},
+                    {d:"Combine texto e variáveis para mensagens dinâmicas.", c:"Crie um alert que diga 'Mana restante: ' seguido do valor de 'mana'.", s:`alert('Mana restante: '+mana);`, v:()=>{characterDialogue.textContent="Verifique a sua reserva.";return true;}},
+                    {d:"Adicione uma classe de encantamento ao seu ritual.", c:"Adicione a classe 'encantado' à div com a classe 'ritual'.", s:`document.querySelector('.ritual').classList.add('encantado');`, v:()=>document.querySelector('.ritual').classList.contains('encantado')},
+                    {d:"Às vezes, é preciso remover um encantamento.", c:"Remova a classe 'encantado' da div com a classe 'ritual'.", s:`document.querySelector('.ritual').classList.remove('encantado');`, v:()=>!document.querySelector('.ritual').classList.contains('encantado')}
+                ];
+                return { dialogue: data[i].d, challenge: data[i].c, solution: data[i].s, validation: data[i].v };
+            }
+            function getReactLevel(i) { /* Retorna dados da fase React */
+                const data = [
+                    {d:"React é a magia de criar componentes reutilizáveis. Vamos simular a sua escrita. Comece com um componente funcional.", c:"Escreva um componente funcional 'Saudacao' que retorna um <h1>Olá, Mundo Arcano</h1>.", s:"function Saudacao(){return <h1>Olá, Mundo Arcano</h1>;}"},
+                    {d:"Componentes podem ser dinâmicos com 'props'.", c:"Crie um componente 'Feitico' que aceita 'props' e retorna um <p>Feitiço: {props.nome}</p>.", s:"function Feitico(props){return <p>Feitiço: {props.nome}</p>;}"},
+                    {d:"Use o seu componente 'Feitico' com um nome.", c:"Invoque o seu componente 'Feitico' passando-lhe a prop nome='Ignição'.", s:"<Feitico nome='Ignição' />"},
+                    {d:"JSX permite usar JavaScript dentro do HTML. Calcule o custo de um feitiço.", c:"Dentro de um <div>, exiba 'Custo: {10 * 5} de mana'.", s:"<div>Custo: {10*5} de mana</div>"},
+                    {d:"Componentes de classe são uma forma mais antiga, mas poderosa, de magia.", c:"Crie um componente de classe 'Grimorio' que renderiza um <h2>Meu Grimório</h2>.", s:"class Grimorio extends React.Component{render(){return <h2>Meu Grimório</h2>;}}"},
+                    {d:"O estado (state) permite que os componentes lembrem-se de informações.", c:"Num componente de classe, defina um estado inicial: state = { paginas: 50 }.", s:"state={paginas:50}"},
+                    {d:"Use o estado para exibir informação dinâmica.", c:"Dentro do método render, exiba 'Páginas: {this.state.paginas}'.", s:"<p>Páginas: {this.state.paginas}</p>"},
+                    {d:"Os 'Hooks' são a forma moderna de usar estado em componentes funcionais. O 'useState' é o primeiro.", c:"Dentro de um componente funcional, declare um estado 'mana' com valor 100 usando useState.", s:"const [mana, setMana] = useState(100);"},
+                    {d:"Exiba o estado do seu Hook.", c:"Retorne um <p>Mana: {mana}</p>.", s:"<p>Mana: {mana}</p>"},
+                    {d:"Renderize uma lista de feitiços a partir de um array.", c:"Dado um array ['Fogo', 'Gelo'], use .map para criar um <li> para cada feitiço.", s:"['Fogo','Gelo'].map(f=><li key={f}>{f}</li>)"},
+                    {d:"Eventos em React são nomeados em camelCase, como 'onClick'.", c:"Crie um botão com um evento onClick que chama uma função 'lancarFeitico'.", s:"<button onClick={lancarFeitico}>Lançar</button>"},
+                    {d:"Use uma função de seta para definir o manipulador de eventos diretamente.", c:"Crie um botão que, ao ser clicado, exibe um alert('Boom!').", s:"<button onClick={()=>alert('Boom!')}>Lançar</button>"},
+                    {d:"Renderize conteúdo condicionalmente. Se 'mana' for maior que 0, mostre 'Pode lançar'.", c:"Use o operador ternário: {mana > 0 ? <p>Pode lançar</p> : <p>Sem mana</p>}.", s:"{mana>0?<p>Pode lançar</p>:<p>Sem mana</p>}"},
+                    {d:"Estilize os seus componentes em linha.", c:"Crie um <div> com um atributo style que define a sua cor como 'purple'.", s:"<div style={{color:'purple'}}>Texto Roxo</div>"},
+                    {d:"Fragments permitem agrupar elementos sem adicionar um nó extra ao DOM.", c:"Agrupe um h1 e um p dentro de um Fragment (<> ... </>).", s:"<><h1>Título</h1><p>Parágrafo</p></>"}
+                ];
+                return { dialogue: data[i].d, challenge: data[i].c, solution: data[i].s };
+            }
+            function getNodeLevel(i) { /* Retorna dados da fase Node */
+                const data = [
+                    {d:"Node.js permite que o JavaScript corra no lado do servidor. O primeiro passo é importar um módulo. Importe o módulo 'http'.", c:"Escreva o código para importar o módulo http: const http = require('http');", s:"const http=require('http');"},
+                    {d:"Crie um servidor Arcano. Ele irá escutar por pedidos.", c:"Use http.createServer() e guarde o resultado numa variável 'servidor'.", s:"const servidor=http.createServer();"},
+                    {d:"Dentro do createServer, precisa de uma função para lidar com os pedidos.", c:"Passe uma função (req, res) => {} para o createServer.", s:"http.createServer((req,res)=>{});"},
+                    {d: "Faça o servidor responder. Dentro da função, use res.end().", c: "Use res.end('O servidor responde.') para terminar o pedido.", s: "res.end('O servidor responde.')"},
+                    {d: "Todo o servidor precisa de uma porta para escutar.", c: "Faça o servidor escutar na porta 3000: servidor.listen(3000);", s: "servidor.listen(3000);"},
+                    {d: "Express.js simplifica a criação de servidores. Primeiro, importe-o.", c: "Importe o express: const express = require('express');", s: "const express=require('express');"},
+                    {d: "Depois, crie a sua aplicação Express.", c: "Crie uma aplicação: const app = express();", s: "const app=express();"},
+                    {d: "Defina uma rota para a página inicial ('/').", c: "Use app.get('/', (req, res) => {});", s: "app.get('/',(req,res)=>{});"},
+                    {d: "Envie uma resposta para essa rota.", c: "Dentro da rota, use res.send('<h1>Bem-vindo à Academia</h1>');", s: "res.send('<h1>Bem-vindo à Academia</h1>');"},
+                    {d: "Inicie o servidor Express.", c: "Faça a aplicação escutar na porta 3000: app.listen(3000);", s: "app.listen(3000);"},
+                    {d: "Crie outra rota para os feitiços.", c: "Crie uma rota GET para '/feiticos'.", s: "app.get('/feiticos',(req,res)=>{});"},
+                    {d: "Responda na rota de feitiços com uma lista.", c: "Envie uma resposta JSON: res.json(['Fogo', 'Gelo']);", s: "res.json(['Fogo','Gelo']);"},
+                    {d: "Use os parâmetros da rota para obter um feitiço específico.", c: "Crie uma rota GET para '/feiticos/:nome'.", s: "app.get('/feiticos/:nome');"},
+                    {d: "Acesse o parâmetro 'nome' dentro da rota.", c: "Use req.params.nome para obter o nome do feitiço.", s: "const nome=req.params.nome;"},
+                    {d: "O 'Nodemon' é um golem que reinicia o seu servidor automaticamente. A sua instalação é um feitiço de terminal.", c: "Como instalaria o nodemon globalmente com npm?", s: "npm install -g nodemon"}
+                ];
+                return { dialogue: data[i].d, challenge: data[i].c, solution: data[i].s };
+            }
+            function getApiSqlLevel(i) { /* Retorna dados da fase API/SQL */
+                const data = [
+                    {d:"APIs permitem que mundos diferentes comuniquem. O feitiço 'fetch' é a sua ferramenta principal.", c:"Use fetch() para fazer um pedido a 'api/feiticos'.", s:"fetch('api/feiticos');"},
+                    {d:"O 'fetch' retorna uma Promise. Use '.then()' para processar a resposta.", c:"Adicione .then(response => response.json()) para converter a resposta para JSON.", s:".then(response=>response.json())"},
+                    {d:"Use um segundo '.then()' para trabalhar com os dados.", c:"Adicione .then(dados => console.log(dados)) para ver os dados na consola.", s:".then(dados=>console.log(dados))"},
+                    {d:"Bancos de dados guardam o conhecimento. SQL é a sua linguagem. Selecione todos os feitiços da tabela 'feiticos'.", c:"Escreva a consulta SQL: SELECT * FROM feiticos;", s:"SELECT * FROM feiticos;"},
+                    {d:"Selecione apenas os nomes dos feitiços.", c:"Escreva a consulta: SELECT nome FROM feiticos;", s:"SELECT nome FROM feiticos;"},
+                    {d:"Filtre os feitiços. Selecione apenas aqueles do tipo 'Fogo'.", c:"Use a cláusula WHERE: SELECT * FROM feiticos WHERE tipo = 'Fogo';", s:"SELECT * FROM feiticos WHERE tipo='Fogo';"},
+                    {d:"Insira um novo feitiço na sua tabela.", c:"Use INSERT INTO: INSERT INTO feiticos (nome, tipo) VALUES ('Meteoro', 'Fogo');", s:"INSERT INTO feiticos(nome,tipo)VALUES('Meteoro','Fogo');"},
+                    {d:"O poder pode corromper. Atualize um feitiço existente.", c:"Use UPDATE: UPDATE feiticos SET tipo = 'Arcano' WHERE nome = 'Meteoro';", s:"UPDATE feiticos SET tipo='Arcano'WHERE nome='Meteoro';"},
+                    {d:"Alguns feitiços devem ser esquecidos. Apague um registo.", c:"Use DELETE FROM: DELETE FROM feiticos WHERE nome = 'Meteoro';", s:"DELETE FROM feiticos WHERE nome='Meteoro';"},
+                    {d:"Ordene os seus resultados. Liste os feitiços por ordem alfabética.", c:"Use ORDER BY: SELECT nome FROM feiticos ORDER BY nome ASC;", s:"SELECT nome FROM feiticos ORDER BY nome ASC;"},
+                    {d:"REST é uma filosofia de design de APIs. GET, POST, PUT, DELETE são os seus verbos. Como obteria um recurso?", c:"Qual verbo HTTP é usado para obter dados de uma API?", s:"GET"},
+                    {d:"Como criaria um novo recurso?", c:"Qual verbo HTTP é usado para criar um novo feitiço numa API?", s:"POST"},
+                    {d:"JSON é o pergaminho de eleição para transportar dados de APIs.", c:"Escreva um objeto JSON simples com 'nome': 'Cura' e 'custo': 20.", s:`{"nome":"Cura","custo":20}`},
+                    {d:"Autenticação é a chave para áreas secretas. Muitas APIs usam 'Bearer Tokens'.", c:"Num cabeçalho de pedido, como se pareceria um 'Authorization' com um token?", s:"Authorization: Bearer <seu_token>"},
+                    {d:"Junte tudo. Busque dados de uma API e depois insira-os no seu banco de dados.", c:"Que duas tecnologias usaria para buscar dados de uma API externa e guardá-los permanentemente?", s:"Fetch e SQL"}
+                ];
+                return { dialogue: data[i].d, challenge: data[i].c, solution: data[i].s };
+            }
+
+            function getPythonLevel(i) { /* Retorna dados da fase Python */
+                const data = [
+                    {d:"Python é uma magia poderosa e direta. O primeiro cântico exibe uma mensagem no éter.", c:"Use a função print() para exibir 'Olá, Mundo Serpente'.", s:`print("Olá, Mundo Serpente")`},
+                    {d:"Guarde essência mágica em variáveis.", c:"Crie uma variável 'nome' e atribua a ela o valor 'Arcanecoder'.", s:`nome = "Arcanecoder"`},
+                    {d:"Combine texto e variáveis para saudações personalizadas.", c:"Use a função print() para exibir 'Bem-vindo, ' e o valor da variável 'nome'.", s:`print("Bem-vindo, " + nome)`},
+                    {d:"A matemática também é magia. Calcule seu poder.", c:"Crie uma variável 'mana' com o valor 100 e subtraia 15 dela.", s:`mana = 100 - 15`},
+                    {d:"Encapsule feitiços em funções para reutilizá-los.", c:"Defina uma função chamada 'conjurar' que imprime 'Feitiço lançado!'.", s:`def conjurar():\n    print("Feitiço lançado!")`},
+                    {d:"Para usar uma função, você deve chamá-la.", c:"Chame a função 'conjurar()' que você acabou de criar.", s:`conjurar()`},
+                    {d:"Listas são como bolsas de ingredientes, guardando vários itens.", c:"Crie uma lista chamada 'itens' contendo 'poção' и 'pergaminho'.", s:`itens = ["poção", "pergaminho"]`},
+                    {d:"Você pode pegar um item específico da sua bolsa pela sua posição.", c:"Use o índice para imprimir o primeiro item da sua lista 'itens'.", s:`print(itens[0])`},
+                    {d:"Dicionários guardam conhecimento em pares de chave e valor, como um bestiário.", c:"Crie um dicionário 'grimorio' com a chave 'nome' valendo 'Tomo Arcano'.", s:`grimorio = {"nome": "Tomo Arcano"}`},
+                    {d:"Consulte seu bestiário usando a chave para obter o valor.", c:"Imprima o valor associado à chave 'nome' do seu dicionário 'grimorio'.", s:`print(grimorio["nome"])`},
+                    {d:"A magia precisa tomar decisões. Use if/else.", c:"Se 'mana' for maior que 50, imprima 'Poder suficiente'. Senão, imprima 'Mana baixa'.", s:`if mana > 50:\n    print("Poder suficiente")\nelse:\n    print("Mana baixa")`},
+                    {d:"Percorra todos os seus ingredientes com um laço 'for'.", c:"Use um laço 'for' para imprimir cada item da sua lista 'itens'.", s:`for item in itens:\n    print(item)`},
+                    {d:"Crie feitiços que aceitam alvos. Defina uma função com um argumento.", c:"Crie uma função 'saudar(aluno)' que imprime 'Olá, ' e o nome do aluno.", s:`def saudar(aluno):\n    print("Olá, " + aluno)`},
+                    {d:"Feitiços podem retornar resultados. Use a palavra-chave 'return'.", c:"Crie uma função 'calcular_dano(nivel)' que retorna o nível multiplicado por 10.", s:`def calcular_dano(nivel):\n    return nivel * 10`},
+                    {d:"Deixe anotações para outros feiticeiros (ou para você mesmo) com comentários.", c:"Escreva um comentário em Python: # Este é um feitiço de invisibilidade", s:`# Este é um feitiço de invisibilidade`}
+                ];
+                return { dialogue: data[i].d, challenge: data[i].c, solution: data[i].s.replace(/\\n/g, '\n') };
+            }
+
+            function loadLevel() {
+                if (gameState.currentLevel >= levels.length) {
+                    endGame();
+                    return;
+                }
+                const level = levels[gameState.currentLevel];
+                const theme = chapterThemes[level.chapter];
+                if (theme) {
+                    const root = document.documentElement;
+                    root.style.setProperty('--primary-glow', theme.primary);
+                    root.style.setProperty('--secondary-glow', theme.secondary);
+                }
+
+                chapterTitle.textContent = level.chapter;
+                challengeText.innerHTML = level.challenge;
+                characterDialogue.textContent = level.dialogue;
+                
+                const progress = ((gameState.currentLevel + 1) / levels.length) * 100;
+                progressBarFill.style.width = `${progress}%`;
+
+                clearFeedback();
+                codeInput.value = '';
+                codeInput.focus();
+            }
+
+            function clearFeedback() {
+                feedbackText.textContent = '';
+                iconSuccess.style.display = 'none';
+                iconError.style.display = 'none';
+            }
+
+            function handleSubmit() {
+                const level = levels[gameState.currentLevel];
+                const userAnswer = codeInput.value.trim();
+                let isCorrect = false;
+
+                try {
+                    const normalize = (str) => str.replace(/\s+/g, '').replace(/'/g, '"').toLowerCase();
+                    const normalizePython = (str) => str.replace(/\s+/g, '').replace(/'/g, '"');
+                    
+                    switch (level.type) {
+                        case 'html':
+                            isCorrect = normalize(userAnswer) === normalize(level.solution);
+                            if (isCorrect) spellOutput.innerHTML += userAnswer;
+                            break;
+                        case 'css':
+                            isCorrect = normalize(userAnswer).includes(normalize(level.solution));
+                            if (isCorrect) styleTag.innerHTML += userAnswer;
+                            break;
+                        case 'js':
+                        case 'js-async':
+                            eval(userAnswer); 
+                            isCorrect = level.validation();
+                            break;
+                        case 'react':
+                        case 'node':
+                        case 'api-sql':
+                             isCorrect = normalize(userAnswer).includes(normalize(level.solution));
+                             if(isCorrect) spellOutput.innerHTML += `<pre><code>${userAnswer.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
+                             break;
+                        case 'python':
+                             isCorrect = normalizePython(userAnswer) === normalizePython(level.solution);
+                             if(isCorrect) spellOutput.innerHTML += `<pre><code>${userAnswer.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
+                             break;
+                    }
+
+                    if (isCorrect) {
+                        feedbackText.textContent = "Feitiço bem-sucedido!";
+                        feedbackText.style.color = 'var(--success-color)';
+                        iconSuccess.style.display = 'block';
+                        iconError.style.display = 'none';
+                        
+                        gameState.currentLevel++;
+                        setTimeout(loadLevel, 1500);
+                    } else {
+                        throw new Error("O fluxo de mana não está correto.");
+                    }
+
+                } catch (error) {
+                    feedbackText.textContent = `Falha na conjuração! Verifique o seu cântico.`;
+                    feedbackText.style.color = 'var(--error-color)';
+                    iconError.style.display = 'block';
+                    iconSuccess.style.display = 'none';
+                }
+            }
+            
+            function endGame() {
+                characterDialogue.textContent = "Dominou o Syllabus Arcano e tornou-se um Mestre Arcanecoder! O poder da criação está agora nas suas mãos. Parabéns!";
+                challengeText.textContent = "Fim do treino.";
+                progressBarFill.style.width = `100%`;
+                codeInput.style.display = 'none';
+                submitButton.style.display = 'none';
+            }
+
+            submitButton.addEventListener('click', handleSubmit);
+            codeInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                }
+            });
+            loadLevel();
+        });
+    </script>
+</body>
+</html>
+
