@@ -108,6 +108,7 @@
             display: flex;
             gap: 10px;
             margin-top: 10px;
+            align-items: stretch;
         }
 
         #submit-button { 
@@ -122,8 +123,13 @@
             flex-grow: 1;
         }
         #submit-button:hover { transform: scale(1.02); box-shadow: 0 0 20px var(--primary-glow); }
+        
+        .side-buttons {
+            display: flex;
+            gap: 5px;
+        }
 
-        #reset-button {
+        .side-buttons button {
             background: #444;
             color: white;
             border: 1px solid #666;
@@ -134,6 +140,11 @@
             border-radius: 5px;
             transition: background-color 0.2s;
         }
+        
+        .side-buttons button:hover {
+            background-color: #666;
+        }
+
         #reset-button:hover {
             background-color: var(--error-color);
         }
@@ -164,8 +175,13 @@
             <textarea id="code-input" spellcheck="false"></textarea>
             <div class="button-container">
                 <button id="submit-button">Conjurar</button>
-                <button id="reset-button" title="Resetar Progresso">Reset</button>
+                <div class="side-buttons">
+                    <button id="save-button" title="Salvar Progresso em Arquivo">Salvar</button>
+                    <button id="import-button" title="Importar Progresso de Arquivo">Importar</button>
+                    <button id="reset-button" title="Resetar Progresso">Reset</button>
+                </div>
             </div>
+            <input type="file" id="import-file-input" accept=".txt" style="display: none;">
             <div id="feedback-box">
                 <svg id="icon-success" class="feedback-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="var(--success-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <svg id="icon-error" class="feedback-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6l12 12" stroke="var(--error-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -180,7 +196,10 @@
             const challengeText = document.getElementById('challenge-text');
             const codeInput = document.getElementById('code-input');
             const submitButton = document.getElementById('submit-button');
-            const resetButton = document.getElementById('reset-button'); // NOVO BOTÃO
+            const resetButton = document.getElementById('reset-button');
+            const saveButton = document.getElementById('save-button');
+            const importButton = document.getElementById('import-button');
+            const importFileInput = document.getElementById('import-file-input');
             const feedbackText = document.getElementById('feedback-text');
             const chapterTitle = document.getElementById('chapter-title');
             const progressBarFill = document.getElementById('progress-bar-fill');
@@ -190,7 +209,6 @@
             const styleTag = document.createElement('style');
             document.head.appendChild(styleTag);
             
-            // --- LÓGICA DE CARREGAMENTO (LOAD) ---
             const savedStateJSON = localStorage.getItem('arcanecoderSave');
             let gameState = savedStateJSON ? JSON.parse(savedStateJSON) : { currentLevel: 0 };
 
@@ -351,7 +369,7 @@
                     {d:"A matemática também é magia. Calcule seu poder.", c:"Crie uma variável 'mana' com o valor 100 e subtraia 15 dela.", s:`mana = 100 - 15`},
                     {d:"Encapsule feitiços em funções para reutilizá-los.", c:"Defina uma função chamada 'conjurar' que imprime 'Feitiço lançado!'.", s:`def conjurar():\n    print("Feitiço lançado!")`},
                     {d:"Para usar uma função, você deve chamá-la.", c:"Chame a função 'conjurar()' que você acabou de criar.", s:`conjurar()`},
-                    {d:"Listas são como bolsas de ingredientes, guardando vários itens.", c:"Crie uma lista chamada 'itens' contendo 'poção' и 'pergaminho'.", s:`itens = ["poção", "pergaminho"]`},
+                    {d:"Listas são como bolsas de ingredientes, guardando vários itens.", c:"Crie uma lista chamada 'itens' contendo 'poção' e 'pergaminho'.", s:`itens = ["poção", "pergaminho"]`},
                     {d:"Você pode pegar um item específico da sua bolsa pela sua posição.", c:"Use o índice para imprimir o primeiro item da sua lista 'itens'.", s:`print(itens[0])`},
                     {d:"Dicionários guardam conhecimento em pares de chave e valor, como um bestiário.", c:"Crie um dicionário 'grimorio' com a chave 'nome' valendo 'Tomo Arcano'.", s:`grimorio = {"nome": "Tomo Arcano"}`},
                     {d:"Consulte seu bestiário usando a chave para obter o valor.", c:"Imprima o valor associado à chave 'nome' do seu dicionário 'grimorio'.", s:`print(grimorio["nome"])`},
@@ -436,7 +454,6 @@
                         iconSuccess.style.display = 'block';
                         iconError.style.display = 'none';
                         
-                        // --- LÓGICA DE SALVAMENTO (SAVE) ---
                         gameState.currentLevel++;
                         localStorage.setItem('arcanecoderSave', JSON.stringify(gameState));
 
@@ -461,21 +478,81 @@
                 submitButton.style.display = 'none';
             }
 
-            // --- LÓGICA DO BOTÃO DE RESET ---
+            // --- FEITIÇOS DE PORTABILIDADE ---
+
+            function saveGameToFile() {
+                try {
+                    const stateToSave = JSON.stringify(gameState);
+                    const blob = new Blob([stateToSave], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `arcanecoder-save-${Date.now()}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    clearFeedback();
+                    feedbackText.textContent = "Progresso salvo em arquivo!";
+                    feedbackText.style.color = 'var(--success-color)';
+                } catch (error) {
+                    clearFeedback();
+                    feedbackText.textContent = "Erro ao salvar o progresso.";
+                    feedbackText.style.color = 'var(--error-color)';
+                }
+            }
+
+            function loadGameFromFile(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const loadedState = JSON.parse(e.target.result);
+                        if (typeof loadedState.currentLevel === 'number' && loadedState.currentLevel >= 0 && loadedState.currentLevel < levels.length) {
+                            gameState = loadedState;
+                            localStorage.setItem('arcanecoderSave', JSON.stringify(gameState));
+                            alert('Progresso carregado com sucesso! O grimório será atualizado.');
+                            location.reload();
+                        } else {
+                            throw new Error('Arquivo de save inválido ou corrompido.');
+                        }
+                    } catch (error) {
+                        alert(`Erro ao carregar o arquivo: ${error.message}`);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = ''; // Permite carregar o mesmo arquivo novamente
+            }
+
+            // --- EVENT LISTENERS ---
+
             resetButton.addEventListener('click', () => {
-                if (confirm('Tem certeza de que quer apagar todo o seu progresso? Este feitiço não pode ser desfeito.')) {
+                if (confirm('Tem certeza de que quer apagar todo o seu progresso local? Este feitiço não pode ser desfeito.')) {
                     localStorage.removeItem('arcanecoderSave');
                     location.reload();
                 }
             });
+            
+            saveButton.addEventListener('click', saveGameToFile);
+            
+            importButton.addEventListener('click', () => {
+                importFileInput.click();
+            });
+
+            importFileInput.addEventListener('change', loadGameFromFile);
 
             submitButton.addEventListener('click', handleSubmit);
+            
             codeInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSubmit();
                 }
             });
+            
             loadLevel();
         });
     </script>
